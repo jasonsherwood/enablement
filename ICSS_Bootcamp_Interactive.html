@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICSS Bootcamp — Interactive Overview</title>
+<style>
+  :root {
+    --bg: #FAFAF7;
+    --surface: #FFFFFF;
+    --surface-2: #F1EFE8;
+    --text: #1A1A1A;
+    --text-muted: #5F5E5A;
+    --text-hint: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-strong: rgba(0,0,0,0.25);
+    --accent: #534AB7;
+    --accent-warm: #D85A30;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  body { padding: 24px 20px 60px; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  header { margin-bottom: 28px; }
+  .eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+  h1 { font-size: 32px; font-weight: 500; margin: 6px 0 4px; letter-spacing: -0.02em; }
+  .sub { font-size: 15px; color: var(--text-muted); }
+
+  button { cursor: pointer; font-family: inherit; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; border-bottom: 0.5px solid var(--border); padding-bottom: 12px; }
+  .tab-btn {
+    background: transparent; border: 0.5px solid var(--border);
+    padding: 7px 13px; font-size: 13px; border-radius: var(--radius-md);
+    color: var(--text-muted); transition: all 0.15s;
+  }
+  .tab-btn:hover { background: var(--surface-2); color: var(--text); }
+  .tab-btn.active { background: var(--text); color: var(--surface); border-color: var(--text); }
+
+  .panel[hidden] { display: none; }
+
+  /* Overview */
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat { background: var(--surface-2); border-radius: var(--radius-md); padding: 16px; }
+  .stat-num { font-size: 28px; font-weight: 500; line-height: 1; }
+  .stat-lbl { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+  .thesis { background: var(--surface-2); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 24px; }
+  .thesis-lbl { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+  .thesis-txt { font-size: 18px; font-weight: 500; line-height: 1.4; }
+
+  .challenges { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 24px; }
+  .challenge-card { background: var(--surface); border: 0.5px solid var(--border); padding: 14px 16px; }
+  .cc-title { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .cc-body { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  #pulse-room { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+  .seat { cursor: pointer; transition: all 0.2s; }
+  .seat:hover { transform: scale(1.15); transform-origin: center; transform-box: fill-box; }
+
+  /* Journey */
+  .day-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .day-btn {
+    background: transparent; border: 0.5px solid var(--border);
+    padding: 8px 14px; font-size: 13px; border-radius: var(--radius-md);
+    color: var(--text-muted);
+  }
+  .day-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .day-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .day-col { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 14px; }
+  .col-head { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .col-item { padding: 4px 0; font-size: 13px; line-height: 1.9; opacity: 0; animation: fadeIn 0.4s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .metrics { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .metric-card { background: var(--surface-2); border-radius: var(--radius-md); padding: 14px; }
+  .mc-lbl { font-size: 13px; color: var(--text-muted); }
+  .mc-val { font-size: 16px; font-weight: 500; margin-top: 6px; }
+
+  /* Priorities */
+  .pri-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .pri-card { border-radius: var(--radius-lg); padding: 20px; border: 0.5px solid var(--border); }
+  .pri-card.c-purple { background: #EEEDFE; }
+  .pri-card.c-teal   { background: #E1F5EE; }
+  .pri-card.c-coral  { background: #FAECE7; }
+  .pri-card.c-pink   { background: #FBEAF0; }
+  .pri-num { font-size: 28px; font-weight: 500; line-height: 1; margin-bottom: 8px; }
+  .pri-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
+  .pri-list { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.8; }
+  .pri-card.c-purple .pri-num, .pri-card.c-purple .pri-title, .pri-card.c-purple .pri-list { color: #3C3489; }
+  .pri-card.c-teal   .pri-num, .pri-card.c-teal   .pri-title, .pri-card.c-teal   .pri-list { color: #085041; }
+  .pri-card.c-coral  .pri-num, .pri-card.c-coral  .pri-title, .pri-card.c-coral  .pri-list { color: #712B13; }
+  .pri-card.c-pink   .pri-num, .pri-card.c-pink   .pri-title, .pri-card.c-pink   .pri-list { color: #72243E; }
+  .pri-list li { padding-left: 14px; position: relative; }
+  .pri-list li:before { content: "—"; position: absolute; left: 0; opacity: 0.5; }
+
+  /* Day 3 timeline */
+  .day3-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+  .day3-title { font-size: 18px; font-weight: 500; }
+  .day3-sub { font-size: 13px; color: var(--text-muted); }
+  .ctrl-btn { padding: 8px 14px; font-size: 13px; background: transparent; border: 0.5px solid var(--border-strong); border-radius: var(--radius-md); }
+  .ctrl-btn.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
+  #timeline-rail { position: relative; height: 44px; background: var(--surface-2); border-radius: var(--radius-md); margin-bottom: 16px; overflow: hidden; }
+  #now-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent-warm); left: 0; transition: left 0.3s ease; }
+  #current-session { background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 16px; }
+  .cs-time { font-size: 13px; color: var(--text-muted); }
+  .cs-title { font-size: 20px; font-weight: 500; margin-top: 4px; }
+  .cs-duration { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+  #session-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; }
+  .session-item {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); padding: 10px 12px; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .session-item:hover { border-color: var(--border-strong); }
+  .session-item.active { background: #FAECE7; border-color: var(--accent-warm); }
+  .si-time { font-size: 11px; color: var(--text-muted); }
+
+  /* Riff off */
+  .riff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+  .wheel-col { text-align: center; }
+  #wheel { width: 100%; max-width: 320px; height: auto; }
+  #wheel-group { transition: transform 3.5s cubic-bezier(0.17, 0.67, 0.3, 1); transform-origin: center; }
+  #spin-btn { margin-top: 12px; padding: 10px 22px; font-size: 14px; background: var(--accent-warm); color: #fff; border: none; border-radius: var(--radius-md); font-weight: 500; }
+  #spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .landed-lbl { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+  .landed-val { font-size: 22px; font-weight: 500; margin-bottom: 16px; min-height: 30px; }
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .score-card { border-radius: var(--radius-md); padding: 12px; }
+  .score-card.c-blue  { background: #E6F1FB; }
+  .score-card.c-coral { background: #FAECE7; }
+  .sc-lbl { font-size: 12px; }
+  .sc-val { font-size: 32px; font-weight: 500; line-height: 1; margin-top: 4px; }
+  .score-card.c-blue  .sc-lbl, .score-card.c-blue  .sc-val { color: #0C447C; }
+  .score-card.c-coral .sc-lbl, .score-card.c-coral .sc-val { color: #712B13; }
+  .score-btns { display: flex; gap: 4px; margin-top: 6px; }
+  .mini-btn { background: var(--surface); border: 0.5px solid var(--border); padding: 4px 8px; font-size: 11px; border-radius: var(--radius-sm); cursor: pointer; }
+  .riff-rules { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* Roadmap */
+  .q-intro { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  .q-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
+  .q-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 14px; cursor: pointer; transition: all 0.15s; }
+  .q-card:hover, .q-card.active { border-color: var(--accent); background: #EEEDFE; }
+  .q-lbl { font-size: 22px; font-weight: 500; color: #3C3489; }
+  .q-tag { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  #q-detail { background: var(--surface-2); border-radius: var(--radius-lg); padding: 20px 24px; }
+  .q-detail-title { font-size: 16px; font-weight: 500; margin-bottom: 12px; }
+  .q-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .q-detail-head { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .q-detail-item { font-size: 13px; padding: 3px 0; }
+
+  footer { margin-top: 48px; padding-top: 20px; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-hint); text-align: center; }
+
+  @keyframes pulse { 0%, 100% { fill-opacity: 0.15; } 50% { fill-opacity: 0.4; } }
+
+  @media (max-width: 720px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .challenges, .day-grid, .pri-grid, .q-grid, .riff-grid, #session-list { grid-template-columns: 1fr; }
+    h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Three-day in-person bootcamp</div>
+  <h1>ICSS Bootcamp</h1>
+  <div class="sub">Interconnection Sales Specialist — interactive overview</div>
+</header>
+
+<div id="icss-app">
+
+  <div class="tabs" id="tabs">
+    <button data-tab="overview" class="tab-btn active">Overview</button>
+    <button data-tab="journey" class="tab-btn">3-day journey</button>
+    <button data-tab="priorities" class="tab-btn">Priority topics</button>
+    <button data-tab="day3" class="tab-btn">Day 3 live</button>
+    <button data-tab="roadmap" class="tab-btn">Roadmap</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section data-panel="overview" class="panel">
+    <div class="stats">
+      <div class="stat"><div class="stat-num" data-target="18">0</div><div class="stat-lbl">Participants</div></div>
+      <div class="stat"><div class="stat-num" data-target="3">0</div><div class="stat-lbl">Days</div></div>
+      <div class="stat"><div class="stat-num" data-target="4">0</div><div class="stat-lbl">Priority topics</div></div>
+      <div class="stat"><div class="stat-num">In-person</div><div class="stat-lbl">Format</div></div>
+    </div>
+
+    <div class="thesis">
+      <div class="thesis-lbl">The thesis</div>
+      <div class="thesis-txt">Powered by peer learning — the expertise is already in the room.</div>
+    </div>
+
+    <div class="challenges">
+      <div class="challenge-card" style="border-left: 3px solid #534AB7;">
+        <div class="cc-title">Varying tenure</div>
+        <div class="cc-body">From new hires to 30-year telco veterans in one room.</div>
+      </div>
+      <div class="challenge-card" style="border-left: 3px solid #0F6E56;">
+        <div class="cc-title">New role motion</div>
+        <div class="cc-body">Even experienced sellers must relearn where they fit.</div>
+      </div>
+      <div class="challenge-card" style="border-left: 3px solid #993C1D;">
+        <div class="cc-title">Time to revenue</div>
+        <div class="cc-body">Build conviction, not just knowledge. Leave with an execution plan.</div>
+      </div>
+    </div>
+
+    <div id="pulse-room">
+      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">18 specialists — click any seat</div>
+      <svg viewBox="0 0 520 160" style="width: 100%; height: auto; display: block;" aria-label="Room of 18 participants">
+        <g id="seats"></g>
+      </svg>
+      <div id="seat-info" style="margin-top: 10px; font-size: 13px; color: var(--text-muted); min-height: 20px;"></div>
+    </div>
+  </section>
+
+  <!-- JOURNEY -->
+  <section data-panel="journey" class="panel" hidden>
+    <div class="day-tabs">
+      <button class="day-btn active" data-day="1">Day 1 — Operating model</button>
+      <button class="day-btn" data-day="2">Day 2 — Value stories</button>
+      <button class="day-btn" data-day="3">Day 3 — Expertise</button>
+    </div>
+    <div id="day-content"></div>
+    <div class="metrics">
+      <div class="metric-card"><div class="mc-lbl">AM focus</div><div class="mc-val" id="am-focus">—</div></div>
+      <div class="metric-card"><div class="mc-lbl">PM focus</div><div class="mc-val" id="pm-focus">—</div></div>
+    </div>
+  </section>
+
+  <!-- PRIORITIES -->
+  <section data-panel="priorities" class="panel" hidden>
+    <div class="pri-grid">
+      <div class="pri-card c-purple">
+        <div class="pri-num">01</div>
+        <div class="pri-title">Role clarity &amp; sales motion</div>
+        <ul class="pri-list">
+          <li>Where ICSS enters the sales cycle</li>
+          <li>Relationship with AE, GSA &amp; TAM</li>
+          <li>Lead vs. support — when to take ownership</li>
+          <li>Challenger selling through the ICSS lens</li>
+        </ul>
+      </div>
+      <div class="pri-card c-teal">
+        <div class="pri-num">02</div>
+        <div class="pri-title">Interconnection products</div>
+        <ul class="pri-list">
+          <li>Equinix Fabric: use cases &amp; differentiation</li>
+          <li>Network Edge &amp; Fabric Cloud Router</li>
+          <li>IX, EIA, Metro Connect &amp; Cross Connect</li>
+          <li>Positioning matrix: when to lead with what</li>
+        </ul>
+      </div>
+      <div class="pri-card c-coral">
+        <div class="pri-num">03</div>
+        <div class="pri-title">Sales plays &amp; industry value</div>
+        <ul class="pri-list">
+          <li>Operationalizing sales plays &amp; personas</li>
+          <li>Tailoring value to industry verticals</li>
+          <li>Value engineering &amp; FSI showcase</li>
+          <li>Building industry-specific value stories</li>
+        </ul>
+      </div>
+      <div class="pri-card c-pink">
+        <div class="pri-num">04</div>
+        <div class="pri-title">Competitive landscape</div>
+        <ul class="pri-list">
+          <li>Megaport: GTM, pricing, where they win</li>
+          <li>Carrier-native alternatives by region</li>
+          <li>GTST workshop insights applied</li>
+          <li>Qualifying out: the lose-fast discipline</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAY 3 LIVE -->
+  <section data-panel="day3" class="panel" hidden>
+    <div class="day3-header">
+      <div>
+        <div class="day3-title">Day 3 — 8:00am to 4:30pm</div>
+        <div class="day3-sub">Simulate the day in fast-forward</div>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button id="play-btn" class="ctrl-btn primary">Play day</button>
+        <button id="reset-btn" class="ctrl-btn">Reset</button>
+      </div>
+    </div>
+    <div id="timeline-rail">
+      <div id="timeline-blocks" style="position: absolute; inset: 0;"></div>
+      <div id="now-line"></div>
+    </div>
+    <div id="current-session">
+      <div class="cs-time" id="cs-time">8:00 – 8:30</div>
+      <div class="cs-title" id="cs-title">Interconnect whiteboard</div>
+      <div class="cs-duration" id="cs-duration">30 min</div>
+    </div>
+    <div id="session-list"></div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section data-panel="roadmap" class="panel" hidden>
+    <div class="q-intro">Quarterly enablement roadmap — click a quarter</div>
+    <div class="q-grid">
+      <div class="q-card" data-q="Q2"><div class="q-lbl">Q2</div><div class="q-tag">Ignite webinar</div></div>
+      <div class="q-card active" data-q="Q3"><div class="q-lbl">Q3</div><div class="q-tag">ICSS bootcamp</div></div>
+      <div class="q-card" data-q="Q4"><div class="q-lbl">Q4</div><div class="q-tag">Academy scale</div></div>
+    </div>
+    <div id="q-detail"></div>
+  </section>
+
+</div>
+
+<footer>ICSS Bootcamp — Interconnection Sales Specialist · Interactive overview</footer>
+</div>
+
+<script>
+(function() {
+  const app = document.getElementById('icss-app');
+
+  // TABS
+  const tabs = app.querySelectorAll('.tab-btn');
+  const panels = app.querySelectorAll('.panel');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const target = t.dataset.tab;
+    panels.forEach(p => p.hidden = p.dataset.panel !== target);
+  }));
+
+  // STAT COUNTERS
+  app.querySelectorAll('.stat-num[data-target]').forEach(el => {
+    const target = parseInt(el.dataset.target, 10);
+    let cur = 0;
+    const step = Math.max(1, Math.round(target / 25));
+    const tick = () => {
+      cur = Math.min(target, cur + step);
+      el.textContent = cur;
+      if (cur < target) requestAnimationFrame(tick);
+    };
+    setTimeout(tick, 150);
+  });
+
+  // SEATS
+  const seatsG = document.getElementById('seats');
+  const seatInfo = document.getElementById('seat-info');
+  const personas = [
+    '30-year telco veteran', 'Ex-carrier AE', 'Former cloud partner lead',
+    'Fabric product expert', 'FSI vertical specialist', 'EMEA regional',
+    'APAC regional', 'Americas regional', 'New external hire',
+    'Technical SE background', 'GSA crossover', 'Ecosystem partner lead',
+    'Enterprise networking SME', 'Retail & hyperscale', 'Manufacturing focus',
+    'Healthcare vertical', 'Public sector', 'Fresh from onboarding'
+  ];
+  const colors = ['#534AB7','#0F6E56','#D85A30','#D4537E','#378ADD','#BA7517'];
+  const cols = 9;
+  for (let i = 0; i < 18; i++) {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    const x = 50 + col * 52;
+    const y = 40 + row * 60;
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 14);
+    c.setAttribute('fill', colors[i % colors.length]);
+    c.setAttribute('fill-opacity', '0.15');
+    c.setAttribute('stroke', colors[i % colors.length]);
+    c.setAttribute('stroke-width', '1.5');
+    c.classList.add('seat');
+    c.addEventListener('mouseenter', () => {
+      seatInfo.textContent = 'Seat ' + (i + 1) + ': ' + personas[i];
+    });
+    c.addEventListener('click', () => {
+      seatInfo.textContent = 'Seat ' + (i + 1) + ': ' + personas[i] + ' — brings their own objections and deals to the room.';
+    });
+    c.style.animation = 'pulse 3s ease-in-out ' + (i * 0.15) + 's infinite';
+    seatsG.appendChild(c);
+  }
+
+  // JOURNEY
+  const dayData = {
+    1: {
+      title: 'Refining our operating model & market opportunity',
+      am: { focus: 'Operating model co-creation', items: ['Welcome (sales leader)', 'Mastering the ICSS operating model', 'ICSS sales motion and role', 'Shared experience', 'Global alignment & best practices', 'Operating as a high-performing community'] },
+      pm: { focus: 'Market & competitive landscape', items: ['The Equinix enterprise journey', 'How to sell without a data center', 'Understanding the carrier landscape', 'How to compete against the competition', 'Key competitors', 'How to compete'] }
+    },
+    2: {
+      title: 'Developing horizontal & industry value stories',
+      am: { focus: 'Horizontal use cases', items: ['Operationalize sales plays and personas', 'Horizontal — Network modernization', 'Horizontal — Multi-cloud & ecosystem', 'Horizontal — Hybrid & private inference'] },
+      pm: { focus: 'Vertical value stories', items: ['Tailoring value to top 5 verticals', 'Industry experts present best practice', 'Group co-creates industry action plan', 'How will you engage differently?', 'How can I drive new opportunities next week?'] }
+    },
+    3: {
+      title: 'Extending expertise & knowledge',
+      am: { focus: 'Product tech foundations', items: ['Objection handling', 'Product technology foundations', 'Design exercise'] },
+      pm: { focus: 'Deals, panels, whiteboards', items: ['Welcome', 'Interconnection whiteboard', 'Deconstruct 2 deals', 'Interconnection technology foundation', 'Product panels'] }
+    }
+  };
+  function renderDay(n) {
+    const d = dayData[n];
+    document.getElementById('am-focus').textContent = d.am.focus;
+    document.getElementById('pm-focus').textContent = d.pm.focus;
+    const el = document.getElementById('day-content');
+    el.innerHTML =
+      '<div style="font-size: 18px; font-weight: 500; margin-bottom: 12px;">Day ' + n + ' — ' + d.title + '</div>' +
+      '<div class="day-grid">' +
+        '<div class="day-col">' +
+          '<div class="col-head">Morning</div>' +
+          '<div style="margin-top: 8px;">' +
+            d.am.items.map((i, idx) => '<div class="col-item" style="animation-delay: ' + (idx * 0.08) + 's;">— ' + i + '</div>').join('') +
+          '</div>' +
+        '</div>' +
+        '<div class="day-col">' +
+          '<div class="col-head">Afternoon</div>' +
+          '<div style="margin-top: 8px;">' +
+            d.pm.items.map((i, idx) => '<div class="col-item" style="animation-delay: ' + ((idx + d.am.items.length) * 0.08) + 's;">— ' + i + '</div>').join('') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+  app.querySelectorAll('.day-btn').forEach(b => b.addEventListener('click', () => {
+    app.querySelectorAll('.day-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    renderDay(b.dataset.day);
+  }));
+  renderDay(1);
+
+  // DAY 3 TIMELINE
+  const sessions = [
+    { t: '8:00',  title: 'Interconnect whiteboard', dur: 30 },
+    { t: '8:30',  title: 'Deal 1', dur: 45 },
+    { t: '9:15',  title: 'Tech riff off 1', dur: 30 },
+    { t: '9:45',  title: 'Fabric & FCR', dur: 45 },
+    { t: '10:30', title: 'Break', dur: 20 },
+    { t: '10:50', title: 'Deal 2', dur: 45 },
+    { t: '11:35', title: 'Network Edge', dur: 45 },
+    { t: '12:20', title: 'Lunch', dur: 60 },
+    { t: '1:20',  title: 'Objection roundtable', dur: 30 },
+    { t: '1:50',  title: 'Tech riff off 2', dur: 30 },
+    { t: '2:20',  title: 'Break', dur: 20 },
+    { t: '2:40',  title: 'Design exercise', dur: 90 },
+    { t: '4:10',  title: 'Tools & resources', dur: 20 }
+  ];
+  const totalMin = sessions.reduce((a, s) => a + s.dur, 0);
+  const blocksEl = document.getElementById('timeline-blocks');
+  const listEl = document.getElementById('session-list');
+  let acc = 0;
+  sessions.forEach((s, i) => {
+    const left = (acc / totalMin) * 100;
+    const width = (s.dur / totalMin) * 100;
+    const isBreak = /break|lunch/i.test(s.title);
+    const block = document.createElement('div');
+    block.style.cssText = 'position: absolute; top: 0; bottom: 0; left: ' + left + '%; width: ' + width + '%; background: ' + (isBreak ? '#D3D1C7' : ['#534AB7','#0F6E56','#D85A30','#378ADD'][i % 4]) + '; opacity: 0.7; border-right: 1px solid #fff;';
+    blocksEl.appendChild(block);
+
+    const item = document.createElement('div');
+    item.className = 'session-item';
+    item.dataset.idx = i;
+    item.innerHTML = '<div class="si-time">' + s.t + ' · ' + s.dur + 'min</div><div>' + s.title + '</div>';
+    item.addEventListener('click', () => setSession(i));
+    listEl.appendChild(item);
+    acc += s.dur;
+  });
+  const csTime = document.getElementById('cs-time');
+  const csTitle = document.getElementById('cs-title');
+  const csDur = document.getElementById('cs-duration');
+  const nowLine = document.getElementById('now-line');
+  let playTimer = null;
+  let playProgress = 0;
+  function setSession(i) {
+    const s = sessions[i];
+    let startMin = 0;
+    for (let j = 0; j < i; j++) startMin += sessions[j].dur;
+    const endTime = new Date(2000, 0, 1, 8, 0);
+    endTime.setMinutes(endTime.getMinutes() + startMin + s.dur);
+    const end = endTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(' ', '').toLowerCase();
+    csTime.textContent = s.t + ' – ' + end.replace(/^0/,'');
+    csTitle.textContent = s.title;
+    csDur.textContent = s.dur + ' min';
+    listEl.querySelectorAll('.session-item').forEach(el => el.classList.toggle('active', parseInt(el.dataset.idx,10) === i));
+    const pct = ((startMin + s.dur / 2) / totalMin) * 100;
+    nowLine.style.left = pct + '%';
+  }
+  setSession(0);
+  document.getElementById('play-btn').addEventListener('click', function() {
+    if (playTimer) { clearInterval(playTimer); playTimer = null; this.textContent = 'Play day'; return; }
+    this.textContent = 'Pause';
+    const self = this;
+    playTimer = setInterval(() => {
+      playProgress += 3;
+      if (playProgress >= totalMin) { clearInterval(playTimer); playTimer = null; self.textContent = 'Play day'; return; }
+      let acc2 = 0;
+      for (let i = 0; i < sessions.length; i++) {
+        acc2 += sessions[i].dur;
+        if (playProgress < acc2) { setSession(i); break; }
+      }
+    }, 400);
+  });
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    if (playTimer) clearInterval(playTimer);
+    playTimer = null;
+    playProgress = 0;
+    document.getElementById('play-btn').textContent = 'Play day';
+    setSession(0);
+  });
+
+  // ROADMAP
+  const qData = {
+    Q2: {
+      title: 'Q2 — Ignite kickoff',
+      shared: ['Ignite webinar', 'Enterprise networking sales play', 'Introducing global connectivity cloud', 'Practical application (AI roleplay)', 'Challenger approach'],
+      icss: ['Core product knowledge e-learning', 'Training across interconnection portfolio']
+    },
+    Q3: {
+      title: 'Q3 — ICSS bootcamp',
+      shared: ['Ignite webinar', '6-phase customer journey', 'Enterprise networking vertical use cases', 'Sales play e-learning'],
+      icss: ['ICSS bootcamp 3-day workshop', 'Refining operating model', 'Developing industry value stories', 'Extending expertise & knowledge']
+    },
+    Q4: {
+      title: 'Q4 — Scale & sustain',
+      shared: ['SOAR update', 'Built around the customer journey', 'Interconnection at the core of the academy', '100, 200, 300 level content'],
+      icss: ['Piloting the 6-phase customer journey', 'Build learning cohort', 'Package bootcamp content for new joiners']
+    }
+  };
+  function renderQ(q) {
+    const d = qData[q];
+    document.getElementById('q-detail').innerHTML =
+      '<div class="q-detail-title">' + d.title + '</div>' +
+      '<div class="q-detail-grid">' +
+        '<div>' +
+          '<div class="q-detail-head">Field & partner sales</div>' +
+          d.shared.map(i => '<div class="q-detail-item">— ' + i + '</div>').join('') +
+        '</div>' +
+        '<div>' +
+          '<div class="q-detail-head">Additionally for ICSS</div>' +
+          d.icss.map(i => '<div class="q-detail-item">— ' + i + '</div>').join('') +
+        '</div>' +
+      '</div>';
+  }
+  app.querySelectorAll('.q-card').forEach(c => {
+    c.addEventListener('click', () => {
+      app.querySelectorAll('.q-card').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      renderQ(c.dataset.q);
+    });
+  });
+  renderQ('Q3');
+})();
+</script>
+</body>
+</html>
