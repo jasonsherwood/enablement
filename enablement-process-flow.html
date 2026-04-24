@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Enablement Process Flow</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --ink: #1a2332;
+    --ink-soft: #5a6a7e;
+    --line: #e1e7ef;
+    /* Group colors — matching the flow sketch */
+    --bp: #ca8a04;        /* Business Partners — gold/yellow */
+    --bp-soft: #fef9c3;
+    --ep: #16a34a;        /* Enablement Programs — green */
+    --ep-soft: #dcfce7;
+    --es: #2563eb;        /* Enablement Services — blue */
+    --es-soft: #dbeafe;
+    --tr: #1f2937;        /* Transformation — dark (external partner) */
+    --tr-soft: #f1f5f9;
+    --accent: #f59e0b;
+    --shadow: 0 2px 12px rgba(20, 30, 50, 0.06);
+    --shadow-lg: 0 8px 32px rgba(20, 30, 50, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #1a2332 0%, #2d3e5c 100%);
+    color: white;
+    padding: 32px 40px;
+  }
+  header h1 { margin: 0 0 8px; font-size: 28px; font-weight: 600; }
+  header p { margin: 0; opacity: 0.85; font-size: 15px; }
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px 80px;
+  }
+  .intro {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--accent);
+  }
+  .intro h2 { margin: 0 0 8px; font-size: 17px; }
+  .intro p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+
+  /* ==== Shared pillar/node styles ==== */
+  .pillar {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--line);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .pillar:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .pillar[data-group="bp"] { border-top-color: var(--bp); }
+  .pillar[data-group="ep"] { border-top-color: var(--ep); }
+  .pillar[data-group="es"] { border-top-color: var(--es); }
+  .pillar[data-group="tr"] {
+    border-top-color: var(--tr);
+    background: var(--tr-soft);
+  }
+  .pillar .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    align-self: flex-start;
+    margin-bottom: 10px;
+  }
+  .pillar[data-group="bp"] .tag { background: var(--bp-soft); color: var(--bp); }
+  .pillar[data-group="ep"] .tag { background: var(--ep-soft); color: var(--ep); }
+  .pillar[data-group="es"] .tag { background: var(--es-soft); color: var(--es); }
+  .pillar[data-group="tr"] .tag { background: var(--surface); color: var(--tr); }
+  .pillar h3 { margin: 0 0 6px; font-size: 17px; }
+  .pillar .mission { color: var(--ink-soft); font-size: 13px; margin: 0 0 12px; }
+  .pillar .cta {
+    margin-top: auto;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  /* ==== Flow diagram ==== */
+  .flow-diagram {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    aspect-ratio: 1100 / 560;
+  }
+  .flow-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: visible;
+  }
+  .flow-arrow { cursor: pointer; }
+  .flow-arrow path {
+    transition: stroke-width 0.15s ease;
+  }
+  .flow-arrow:hover path { stroke-width: 4; }
+  .flow-arrow circle {
+    stroke: white;
+    stroke-width: 2.5;
+    transition: r 0.15s ease;
+  }
+  .flow-arrow:hover circle { r: 17; }
+  .flow-arrow text {
+    fill: white;
+    font-size: 15px;
+    font-weight: 700;
+    pointer-events: none;
+    user-select: none;
+  }
+  .flow-diagram .pillar {
+    position: absolute;
+    margin: 0;
+    z-index: 2;
+  }
+  .flow-diagram .pillar[data-group="tr"] {
+    top: 0; left: 40%; width: 20%;
+    padding: 12px 16px;
+  }
+  .flow-diagram .pillar[data-group="tr"] h3 { font-size: 15px; margin: 0; }
+  .flow-diagram .pillar[data-group="bp"] { top: 33%; left: 2%; width: 22%; }
+  .flow-diagram .pillar[data-group="ep"] { top: 33%; left: 39%; width: 22%; }
+  .flow-diagram .pillar[data-group="es"] { top: 33%; left: 76%; width: 22%; }
+
+  /* ==== Detail panel (slide-in) ==== */
+  .panel-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 30, 50, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 50;
+  }
+  .panel-backdrop.open { opacity: 1; pointer-events: auto; }
+  .panel {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 520px;
+    max-width: 94vw;
+    background: var(--surface);
+    box-shadow: -12px 0 40px rgba(20, 30, 50, 0.2);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    z-index: 51;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel.open { transform: translateX(0); }
+  .panel-header {
+    padding: 24px 28px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .panel-header h3 { margin: 6px 0 4px; font-size: 20px; }
+  .panel-header .subtitle { color: var(--ink-soft); font-size: 13px; }
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--ink-soft);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .close-btn:hover { background: var(--bg); color: var(--ink); }
+  .panel-body {
+    padding: 20px 28px 32px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .panel-body h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-soft);
+    margin: 20px 0 10px;
+    font-weight: 600;
+  }
+  .panel-body h4:first-child { margin-top: 0; }
+  .panel-body ul { padding-left: 18px; margin: 0 0 12px; }
+  .panel-body li { margin-bottom: 6px; font-size: 14px; }
+  .form-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 14px;
+    border: 1px solid transparent;
+    transition: border-color 0.15s ease;
+  }
+  .form-link:hover { border-color: var(--ep); }
+  .form-link .form-name { font-weight: 500; }
+  .form-link .form-meta { font-size: 12px; color: var(--ink-soft); }
+  .form-link .ext { font-size: 13px; color: var(--ep); }
+  .placeholder {
+    padding: 12px 14px;
+    background: #fff8e7;
+    border: 1px dashed #e0b458;
+    border-radius: 8px;
+    color: #8a6508;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  /* ==== Mobile fallback: linear flow list ==== */
+  .mobile-flow {
+    display: none;
+    margin-top: 24px;
+  }
+  .mobile-flow h2 {
+    font-size: 16px;
+    margin: 0 0 12px;
+  }
+  .mobile-flow ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .mobile-flow li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .mobile-flow .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .mobile-flow .num.bp { background: var(--bp); }
+  .mobile-flow .num.ep { background: var(--ep); }
+  .mobile-flow .num.es { background: var(--es); }
+  .mobile-flow .num.tr { background: var(--tr); }
+
+  @media (max-width: 900px) {
+    .flow-diagram {
+      aspect-ratio: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .flow-svg { display: none; }
+    .flow-diagram .pillar {
+      position: static;
+      width: 100%;
+    }
+    .flow-diagram .pillar[data-group="tr"] { order: 0; }
+    .flow-diagram .pillar[data-group="bp"] { order: 1; }
+    .flow-diagram .pillar[data-group="ep"] { order: 2; }
+    .flow-diagram .pillar[data-group="es"] { order: 3; }
+    .mobile-flow { display: block; }
+    header, main { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Enablement Process Flow</h1>
+  <p>How Business Partners, Enablement Programs, and Enablement Services work together</p>
+</header>
+
+<main>
+
+  <div class="intro">
+    <h2>How to use this page</h2>
+    <p>Click any <strong>group</strong> to see responsibilities, channels, and partners. Click any <strong>numbered arrow</strong> to see the forms and processes that flow between groups.</p>
+  </div>
+
+  <!-- ==== Flow diagram ==== -->
+  <div class="flow-diagram">
+    <svg class="flow-svg" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <defs>
+        <marker id="arrow-yellow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" markerUnits="strokeWidth">
+          <path d="M0,0 L10,5 L0,10 z" fill="#ca8a04"/>
+        </marker>
+        <marker id="arrow-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" markerUnits="strokeWidth">
+          <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+        </marker>
+        <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" markerUnits="strokeWidth">
+          <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+        </marker>
+        <marker id="arrow-black" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" markerUnits="strokeWidth">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+        </marker>
+      </defs>
+
+      <!-- 1. BP -> Programs (yellow, no arrowhead) - Needs Analysis -->
+      <g class="flow-arrow" onclick="openPanel('int-arrow-1')">
+        <path d="M 275 220 Q 346 170 418 220" stroke="#ca8a04" stroke-width="3" fill="none" marker-end="url(#arrow-yellow)"/>
+        <circle cx="346" cy="188" r="15" fill="#ca8a04"/>
+        <text x="346" y="193" text-anchor="middle">1</text>
+      </g>
+
+      <!-- 2. Programs -> BP (green) - Enablement Proposal -->
+      <g class="flow-arrow" onclick="openPanel('int-arrow-2')">
+        <path d="M 418 320 Q 346 370 275 320" stroke="#16a34a" stroke-width="3" fill="none" marker-end="url(#arrow-green)"/>
+        <circle cx="346" cy="352" r="15" fill="#16a34a"/>
+        <text x="346" y="357" text-anchor="middle">2</text>
+      </g>
+
+      <!-- 3. Programs -> Services (green, no arrowhead) - Enablement Proposal -->
+      <g class="flow-arrow" onclick="openPanel('int-arrow-2')">
+        <path d="M 682 220 Q 754 170 826 220" stroke="#16a34a" stroke-width="3" fill="none" marker-end="url(#arrow-green)"/>
+        <circle cx="754" cy="188" r="15" fill="#16a34a"/>
+        <text x="754" y="193" text-anchor="middle">3</text>
+      </g>
+
+      <!-- 4. Services -> Programs (blue) -->
+      <g class="flow-arrow" onclick="openPanel('int-ep-es')">
+        <path d="M 826 320 Q 754 370 682 320" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+        <circle cx="754" cy="352" r="15" fill="#2563eb"/>
+        <text x="754" y="357" text-anchor="middle">4</text>
+      </g>
+
+      <!-- 5. Services <-> BP (blue, bidirectional) long arc under everything -->
+      <g class="flow-arrow" onclick="openPanel('int-bp-es')">
+        <path d="M 945 370 C 945 510, 155 510, 155 370" stroke="#2563eb" stroke-width="2.5" fill="none" marker-start="url(#arrow-blue)" marker-end="url(#arrow-blue)"/>
+        <circle cx="550" cy="485" r="15" fill="#2563eb"/>
+        <text x="550" y="490" text-anchor="middle">5</text>
+      </g>
+    </svg>
+
+    <!-- Business Partners (left) -->
+    <div class="pillar" data-group="bp" onclick="openPanel('group-bp')">
+      <span class="tag">Group 1</span>
+      <h3>Business Partners</h3>
+      <p class="mission">Voice of the audience — triages needs, advises stakeholders, drives adoption.</p>
+      <div class="cta">View full detail &rarr;</div>
+    </div>
+
+    <!-- Enablement Programs (center) -->
+    <div class="pillar" data-group="ep" onclick="openPanel('group-ep')">
+      <span class="tag">Group 2</span>
+      <h3>Enablement Programs</h3>
+      <p class="mission">Designs and delivers end-to-end enablement programs tied to business priorities.</p>
+      <div class="cta">View full detail &rarr;</div>
+    </div>
+
+    <!-- Enablement Services (right) -->
+    <div class="pillar" data-group="es" onclick="openPanel('group-es')">
+      <span class="tag">Group 3</span>
+      <h3>Enablement Services</h3>
+      <p class="mission">Production and operations engine — design, vendors, tooling, LMS, intake, metrics.</p>
+      <div class="cta">View full detail &rarr;</div>
+    </div>
+  </div>
+
+  <!-- Mobile fallback: linear numbered interaction list -->
+  <div class="mobile-flow">
+    <h2>Interactions</h2>
+    <ol>
+      <li onclick="openPanel('int-arrow-1')"><span class="num bp">1</span> Needs Analysis &mdash; Business Partners &rarr; Programs</li>
+      <li onclick="openPanel('int-arrow-2')"><span class="num ep">2</span> Enablement Proposal &mdash; Programs &rarr; Business Partners</li>
+      <li onclick="openPanel('int-arrow-2')"><span class="num ep">3</span> Enablement Proposal &mdash; Programs &rarr; Services</li>
+      <li onclick="openPanel('int-ep-es')"><span class="num es">4</span> Service delivery &mdash; Services &rarr; Programs</li>
+      <li onclick="openPanel('int-bp-es')"><span class="num es">5</span> Services catalog &mdash; Business Partners &harr; Services</li>
+    </ol>
+  </div>
+
+</main>
+
+<!-- ==== Slide-in detail panel ==== -->
+<div class="panel-backdrop" id="backdrop" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="panel-header">
+    <div>
+      <div class="subtitle" id="panel-subtitle"></div>
+      <h3 id="panel-title"></h3>
+    </div>
+    <button class="close-btn" onclick="closePanel()" aria-label="Close">&times;</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<script>
+  // ==== Shared services catalog — used by both BP <-> Services and Programs <-> Services panels ====
+  const servicesCatalog = [
+    {
+      name: "Instructional Design",
+      description: "Build e-learning content \u2014 course design, authoring, and production.",
+      url: "https://app.smartsheet.com/b/form/aacdc7108dfd4693888f13ec71e79932",
+      meta: "Smartsheet intake form"
+    },
+    {
+      name: "Sales Connections",
+      description: "Communications activities to reach sales audiences.",
+      url: "https://equinixinc.sharepoint.com/sites/SalesPartnerEnablementTeam/_layouts/15/listforms.aspx?cid=ZWJjMDY3YTUtMmY2Ni00MjFjLThmNWYtYzBlM2RlZTE4Y2Ux&nav=NzcyOTY1ODEtYjYzYS00NDQyLThkYmYtN2NlNTQ4NTAwZTU5",
+      meta: "SharePoint request form"
+    },
+    {
+      name: "GTM Knowledge Hub",
+      description: "Post content to the internal GTM knowledge system.",
+      url: "https://forms.office.com/r/NUKUKh6rmP",
+      meta: "Microsoft Forms"
+    },
+    {
+      name: "Enablement Scheduling",
+      description: "Schedule webinars and live enablement sessions.",
+      url: "https://app.smartsheet.com/b/form/019d8d3b2c03755cbabf6831d7f45ebf",
+      meta: "Smartsheet request form"
+    },
+    {
+      name: "LMS Loading",
+      description: "Process to load completed e-learning into the LMS (Sum Total).",
+      url: "https://equinixinc-my.sharepoint.com/:l:/r/personal/ljoiner_equinix_com/Lists/Delivery%20Ops%20Intake%20Form%20Test?e=NG2ZfA",
+      meta: "SharePoint \u2014 Delivery Ops Intake"
+    }
+  ];
+
+  function servicesCatalogHTML() {
+    const items = servicesCatalog.map(s => {
+      if (s.url) {
+        return `
+          <a class="form-link" href="${s.url}" target="_blank" rel="noopener">
+            <span>
+              <span class="form-name">${s.name}</span><br>
+              <span class="form-meta">${s.description} &middot; ${s.meta}</span>
+            </span>
+            <span class="ext">Open &rarr;</span>
+          </a>
+        `;
+      } else {
+        return `
+          <div class="placeholder">
+            <strong>${s.name}</strong> &mdash; ${s.description} <em>(link pending)</em>
+          </div>
+        `;
+      }
+    }).join('');
+    return `<h4>Services available</h4>${items}`;
+  }
+
+  // ==== Content store ====
+  const content = {
+    "group-bp": {
+      subtitle: "Group \u2022 Business Partners",
+      title: "Business Partners",
+      body: `
+        <h4>Responsibilities</h4>
+        <ul>
+          <li>Deep audience acumen</li>
+          <li>Understand &amp; triage the needs of the business</li>
+          <li>Obtain buy-in &amp; communicate enablement programs</li>
+          <li>Advise business stakeholders on opportunities for development</li>
+          <li>Gap analysis \u2014 today vs. future roles</li>
+          <li>Agree enablement timeline</li>
+          <li>Provide audience perspective into GTM &amp; other stakeholders</li>
+          <li>Audience advocate</li>
+          <li>Stakeholder relationship management</li>
+          <li>Landing &amp; driving adoption for global programs</li>
+        </ul>
+
+        <h4>Channels</h4>
+        <ul>
+          <li>Teams working groups</li>
+          <li>Direct comms &mdash; leadership call</li>
+          <li>GTM Knowledge Hub</li>
+          <li>Learning modules</li>
+          <li>Webinars</li>
+          <li>AI tools</li>
+          <li>Stakeholder ELT</li>
+          <li>Quarterly learning</li>
+        </ul>
+
+        <h4>Partners</h4>
+        <ul>
+          <li>Sales &amp; Customer Success leadership</li>
+          <li>Sales &amp; Customer Success ICs</li>
+          <li>Product</li>
+          <li>Marketing &mdash; Solutions</li>
+        </ul>
+      `
+    },
+    "group-ep": {
+      subtitle: "Group \u2022 Enablement Programs",
+      title: "Enablement Programs",
+      body: `
+        <h4>Responsibilities</h4>
+        <ul>
+          <li>Design &amp; build e2e enablement programs</li>
+          <li>Launch, land &amp; define measurable outcomes for programs that tie to driving business priority</li>
+          <li>Appropriately sequence programs &amp; cross-functional enablement to ensure cohesivity &amp; mitigate audience fatigue</li>
+          <li>Work regularly with interlock teams to iterate &amp; calibrate</li>
+          <li>Develop proficiency across the audiences</li>
+        </ul>
+
+        <h4>Channels</h4>
+        <ul>
+          <li>Audience broadcasting (All Hands, Sales Connections, CS Connections, Ignite)</li>
+          <li>New Hire training</li>
+          <li>Sharepoint Knowledge Hub</li>
+          <li>ELC</li>
+        </ul>
+
+        <h4>Partners</h4>
+        <ul>
+          <li>Business Partners &amp; Services team</li>
+          <li>GTM Transformation / Change Management</li>
+          <li>Field / audience stakeholders &amp; SMEs</li>
+          <li>DIO</li>
+          <li>Product &amp; Marketing</li>
+          <li>Talent Management</li>
+        </ul>
+      `
+    },
+    "group-es": {
+      subtitle: "Group \u2022 Enablement Services",
+      title: "Enablement Services",
+      body: `
+        <h4>Responsibilities</h4>
+        <ul>
+          <li>Instructional Design / Creative Services &rarr; content production</li>
+          <li>Vendor management</li>
+          <li>LMS / content management governance</li>
+          <li>AI tooling / advisory + publishing</li>
+          <li>Resource allocation / capacity planning</li>
+          <li>Reporting / metrics</li>
+          <li>Enablement intake</li>
+          <li>Operations support</li>
+        </ul>
+
+        <h4>Channels</h4>
+        <ul>
+          <li>Knowledge Hub</li>
+          <li>LMS + Quarterly Learning</li>
+          <li>Reporting on enablement programs</li>
+          <li>Yoodli</li>
+        </ul>
+
+        <h4>Partners</h4>
+        <ul>
+          <li>Business Partners</li>
+          <li>Programs</li>
+          <li>Content production vendors &mdash; Yoodli, Genius, SureSkills, Cognizant</li>
+          <li>DIO</li>
+          <li>LMS &rarr; Sum Total</li>
+          <li>AI Tooling &rarr; Yoodli, DHR</li>
+          <li>Marketing</li>
+        </ul>
+      `
+    },
+    "int-arrow-1": {
+      subtitle: "Arrow 1 \u2022 Business Partners \u2192 Enablement Programs",
+      title: "Enablement Needs Analysis",
+      body: `
+        <h4>Flow at a glance</h4>
+        <p><strong>Business Partners</strong> capture an audience or business need and submit the <em>Enablement Needs Analysis Intake</em> to Programs.</p>
+
+        <h4>The intake form</h4>
+        <a class="form-link" href="https://equinixinc-my.sharepoint.com/personal/jsherwood_equinix_com/Documents/Planning/Enablement_Needs_Analysis_Intake.docx?web=1" target="_blank" rel="noopener">
+          <span>
+            <span class="form-name">Enablement Needs Analysis Intake</span><br>
+            <span class="form-meta">SharePoint &bull; .docx</span>
+          </span>
+          <span class="ext">Open &rarr;</span>
+        </a>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:10px;"><strong>Why it exists:</strong> Prioritize impact to the business and allocate resources.</p>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:4px;"><strong>Key components:</strong></p>
+        <ul>
+          <li>Summary of ask</li>
+          <li>Impacted audience</li>
+          <li>What's changing</li>
+          <li>Compelling event</li>
+          <li>Timeline</li>
+          <li>Impact to business</li>
+          <li>Potential modality</li>
+          <li>What does competency look like</li>
+        </ul>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:4px;"><strong>Next:</strong> Move from intake form to a slide format. Define what it looks like, prototype, test, automate to scale, then iterate. SME input required.</p>
+      `
+    },
+    "int-arrow-2": {
+      subtitle: "Arrows 2 &amp; 3 \u2022 Programs \u2192 Business Partners &amp; Services",
+      title: "Enablement Proposal",
+      body: `
+        <h4>Flow at a glance</h4>
+        <p>Programs responds to a need with an <em>Enablement Proposal</em>. The same proposal goes to <strong>Business Partners</strong> for review and alignment (arrow 2) and to <strong>Services</strong> as the brief for production (arrow 3).</p>
+
+        <h4>The proposal</h4>
+        <div class="placeholder">
+          <strong>Enablement Proposal</strong> &mdash; add link when available
+        </div>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:4px;">The Enablement Proposal includes:</p>
+        <ul>
+          <li><strong>Project Summary</strong> &mdash; learning objectives, focus areas, outcomes</li>
+          <li><strong>Impacted Audiences</strong></li>
+          <li><strong>Impact by Role</strong></li>
+          <li><strong>Plan on a Page</strong>
+            <ul>
+              <li>Timeline</li>
+              <li>Vehicles / activities</li>
+              <li>Rollout proposal</li>
+              <li>Success metrics</li>
+            </ul>
+          </li>
+        </ul>
+      `
+    },
+    "int-ep-es": {
+      subtitle: "Arrow 4 \u2022 Enablement Services \u2192 Enablement Programs",
+      title: "Services Delivery \u2014 for Programs",
+      body: `
+        <h4>Flow at a glance</h4>
+        <p>Services delivers the requested content, comms, scheduling, or LMS work back to Programs (arrow 4). The full services catalog is below.</p>
+
+        ${servicesCatalogHTML()}
+      `
+    },
+    "int-bp-es": {
+      subtitle: "Arrow 5 \u2022 Business Partners \u2194 Enablement Services",
+      title: "Services Catalog \u2014 for Business Partners",
+      body: `
+        <h4>Flow at a glance</h4>
+        <p>Business Partners work directly with Services in both directions (arrow 5): BP requests audience-facing comms, content, webinars, knowledge-hub posts, or LMS loading, and Services delivers back.</p>
+
+        ${servicesCatalogHTML()}
+      `
+    }
+  };
+
+  const panel = document.getElementById('panel');
+  const backdrop = document.getElementById('backdrop');
+  const panelTitle = document.getElementById('panel-title');
+  const panelSubtitle = document.getElementById('panel-subtitle');
+  const panelBody = document.getElementById('panel-body');
+
+  function openPanel(key) {
+    const c = content[key];
+    if (!c) return;
+    panelTitle.textContent = c.title;
+    panelSubtitle.textContent = c.subtitle;
+    panelBody.innerHTML = c.body;
+    panel.classList.add('open');
+    backdrop.classList.add('open');
+  }
+  function closePanel() {
+    panel.classList.remove('open');
+    backdrop.classList.remove('open');
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+</script>
+
+</body>
+</html>
