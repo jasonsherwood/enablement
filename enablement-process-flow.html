@@ -55,6 +55,73 @@
   .intro h2 { margin: 0 0 8px; font-size: 17px; }
   .intro p { margin: 0; color: var(--ink-soft); font-size: 14px; }
 
+  /* ==== Decision card: Programs vs Services ==== */
+  .decision-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 22px 24px 18px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  .decision-card h2 { margin: 0 0 4px; font-size: 17px; }
+  .decision-card .lede { margin: 0 0 16px; color: var(--ink-soft); font-size: 13px; }
+  .decision-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .route {
+    border-radius: 12px;
+    padding: 16px 18px;
+    border-top: 4px solid var(--line);
+  }
+  .route.programs { background: var(--ep-soft); border-top-color: var(--ep); }
+  .route.services { background: var(--es-soft); border-top-color: var(--es); }
+  .route .route-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: var(--surface);
+    margin-bottom: 8px;
+  }
+  .route.programs .route-tag { color: var(--ep); }
+  .route.services .route-tag { color: var(--es); }
+  .route h3 { margin: 0 0 6px; font-size: 15px; }
+  .route .when { font-size: 13px; margin: 0 0 10px; color: var(--ink); font-weight: 500; }
+  .route ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); }
+  .route ul li { margin-bottom: 3px; }
+  .route .examples-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-soft);
+    margin: 12px 0 4px;
+    font-weight: 600;
+  }
+  .decision-footer {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .decision-footer strong { color: var(--ink); }
+  @media (max-width: 720px) {
+    .decision-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Compact variant used inside detail panels */
+  .panel-body .decision-grid { gap: 12px; }
+  .panel-body .route { padding: 14px 16px; }
+  .panel-body .route h3 { font-size: 14px; }
+  .panel-body .route .when { font-size: 12px; }
+  .panel-body .route ul { font-size: 12px; }
+
   /* ==== Shared pillar/node styles ==== */
   .pillar {
     background: var(--surface);
@@ -314,6 +381,49 @@
     <p>Click any <strong>group</strong> to see responsibilities, channels, and partners. Click any <strong>numbered arrow</strong> to see the forms and processes that flow between groups.</p>
   </div>
 
+  <!-- ==== Decision card: Programs vs Services ==== -->
+  <div class="decision-card">
+    <h2>Business Partners &mdash; Programs route or Services route?</h2>
+    <p class="lede">Two front doors are open to you. Use this guide to pick the right one.</p>
+    <div class="decision-grid">
+      <div class="route programs">
+        <span class="route-tag">Arrow 1 &bull; Programs</span>
+        <h3>Go to Enablement Programs</h3>
+        <p class="when">When the need spans <strong>multiple delivery modalities</strong> and/or is a <strong>major business transformation or longer-running initiative</strong>.</p>
+        <ul>
+          <li>End-to-end design across content, comms, learning, measurement</li>
+          <li>Cross-functional sequencing and stakeholder alignment</li>
+          <li>Defined outcomes and success metrics</li>
+        </ul>
+        <div class="examples-label">Examples</div>
+        <ul>
+          <li>Sales plays</li>
+          <li>Quarterly learning plans</li>
+          <li>Quote to Cash</li>
+        </ul>
+      </div>
+      <div class="route services">
+        <span class="route-tag">Arrow 5 &bull; Services</span>
+        <h3>Go directly to Enablement Services</h3>
+        <p class="when">When you need a <strong>single enablement service</strong> for a <strong>one-off requirement</strong>.</p>
+        <ul>
+          <li>Discrete production or delivery task</li>
+          <li>Already-defined audience and content</li>
+          <li>No broader program design needed</li>
+        </ul>
+        <div class="examples-label">Examples</div>
+        <ul>
+          <li>Course updates</li>
+          <li>Webinars</li>
+          <li>Knowledge Hub submissions</li>
+        </ul>
+      </div>
+    </div>
+    <div class="decision-footer">
+      <strong>Not sure which route?</strong> Talk to a BP lead first &mdash; they&rsquo;ll help you size the ask before you submit an intake.
+    </div>
+  </div>
+
   <!-- ==== Flow diagram ==== -->
   <div class="flow-diagram">
     <svg class="flow-svg" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -478,6 +588,37 @@
     return `<h4>Services available</h4>${items}`;
   }
 
+  function routeGuidanceHTML() {
+    return `
+      <h4>Programs route or Services route?</h4>
+      <div class="decision-grid">
+        <div class="route programs">
+          <span class="route-tag">Arrow 1 &bull; Programs</span>
+          <h3>Go to Programs</h3>
+          <p class="when">Multiple delivery modalities and/or major transformation or longer-running initiative.</p>
+          <p class="examples-label">Examples</p>
+          <ul>
+            <li>Sales plays</li>
+            <li>Quarterly learning plans</li>
+            <li>Quote to Cash</li>
+          </ul>
+        </div>
+        <div class="route services">
+          <span class="route-tag">Arrow 5 &bull; Services</span>
+          <h3>Go to Services</h3>
+          <p class="when">Single enablement service for a one-off requirement.</p>
+          <p class="examples-label">Examples</p>
+          <ul>
+            <li>Course updates</li>
+            <li>Webinars</li>
+            <li>Knowledge Hub submissions</li>
+          </ul>
+        </div>
+      </div>
+      <div class="decision-footer"><strong>Not sure?</strong> Talk to a BP lead first.</div>
+    `;
+  }
+
   // ==== Content store ====
   const content = {
     "group-bp": {
@@ -517,6 +658,8 @@
           <li>Product</li>
           <li>Marketing &mdash; Solutions</li>
         </ul>
+
+        ${routeGuidanceHTML()}
       `
     },
     "group-ep": {
@@ -615,6 +758,8 @@
           <li>What does competency look like</li>
         </ul>
         <p style="font-size:13px;color:var(--ink-soft);margin-top:4px;"><strong>Next:</strong> Move from intake form to a slide format. Define what it looks like, prototype, test, automate to scale, then iterate. SME input required.</p>
+
+        ${routeGuidanceHTML()}
       `
     },
     "int-arrow-2": {
@@ -660,6 +805,8 @@
       body: `
         <h4>Flow at a glance</h4>
         <p>Business Partners work directly with Services in both directions (arrow 5): BP requests audience-facing comms, content, webinars, knowledge-hub posts, or LMS loading, and Services delivers back.</p>
+
+        ${routeGuidanceHTML()}
 
         ${servicesCatalogHTML()}
       `
